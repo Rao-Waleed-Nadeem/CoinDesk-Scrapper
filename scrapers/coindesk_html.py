@@ -1,25 +1,55 @@
-from bs4 import BeautifulSoup
+from http_client.client import HTTPClient
+from parsers.homepage_parser import HomepageParser
+
+
+from pathlib import Path
 
 from http_client.client import HTTPClient
+from parsers.homepage_parser import HomepageParser
 
-client = HTTPClient()
+OUTPUT_DIR = Path("output")
 
-response = client.get("https://www.coindesk.com/")
 
-if response:
+def save_html(response_text: str):
 
-    soup = BeautifulSoup(response.text, "html.parser")
+    OUTPUT_DIR.mkdir(exist_ok=True)
 
-    titles = soup.find_all("h2")
+    html_file = OUTPUT_DIR / "homepage.html"
 
-    print("\nLatest Headlines\n")
+    pretty_file = OUTPUT_DIR / "homepage_pretty.html"
 
-    for title in titles[:10]:
+    html_file.write_text(
+        response_text,
+        encoding="utf-8",
+    )
 
-        text = title.get_text(strip=True)
+    parser = HomepageParser(response_text)
 
-        if text:
+    pretty_file.write_text(
+        parser.soup.prettify(),
+        encoding="utf-8",
+    )
 
-            print(text)
 
-client.close()
+def scrape_homepage():
+
+    client = HTTPClient()
+
+    try:
+
+        response = client.get("https://www.coindesk.com/")
+
+        if response is None:
+            return []
+
+        save_html(response.text)
+
+        parser = HomepageParser(response.text)
+
+        articles = parser.parse()
+
+        return articles
+
+    finally:
+
+        client.close()
