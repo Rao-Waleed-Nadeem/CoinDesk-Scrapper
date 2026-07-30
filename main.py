@@ -1,24 +1,25 @@
-from scrapers.coindesk_html import scrape_homepage
-from scrapers.downloader import download_pdf
+from scrapers.coindesk_scraper import CoinDeskScraper
+from api_clients.pagination import CursorPagination
 
+scraper = CoinDeskScraper()
 
-def main():
+pagination = CursorPagination()
 
-    print("=" * 50)
-    print("CoinDesk Scraper Started")
-    print("=" * 50)
+articles = scraper.scrape_timeline(
+    size=16,
+    pagination=pagination,
+)
 
-    articles = scrape_homepage()
+articles = scraper.enrich_articles(articles)
 
-    print("\nLatest Headlines\n")
+for article in articles:
 
-    for article in articles[:10]:
-        print(article["title"])
+    print(article.title)
 
-    download_pdf()
+    print(article.author)
 
-    print("\nFinished Successfully!")
+    print(article.url)
 
+    print("-" * 80)
 
-if __name__ == "__main__":
-    main()
+scraper.close()

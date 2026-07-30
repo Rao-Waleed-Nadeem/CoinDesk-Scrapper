@@ -10,17 +10,25 @@ from .auth import Authentication
 from .validators import ResponseValidator
 
 
+from http_client.client import HTTPClient
+from .auth import Authentication
+from .validators import ResponseValidator
+
+import logging
+
+
 class BaseAPIClient:
 
     def __init__(
         self,
-        base_url: str,
-        auth: Authentication | None = None,
+        base_url,
+        http_client=None,
+        auth=None,
     ):
 
         self.base_url = base_url.rstrip("/")
 
-        self.http = HTTPClient()
+        self.http = http_client or HTTPClient()
 
         self.auth = auth or Authentication()
 
